@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleExecutable</key><string>OBS</string>
+  <key>CFBundleIdentifier</key><string>com.obsproject.obs-studio</string>
+  <key>CFBundleName</key><string>OBS Studio</string>
+  <key>CFBundleIconFile</key><string>AppIcon.icns</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>@version@</string>
+  <key>CFBundleVersion</key><string>@version@</string>
+  <key>NSHighResolutionCapable</key><true/>
+  <key>NSCameraUsageDescription</key><string>OBS needs camera access for camera sources.</string>
+  <key>NSMicrophoneUsageDescription</key><string>OBS needs microphone access for audio sources.</string>
+</dict>
+</plist>

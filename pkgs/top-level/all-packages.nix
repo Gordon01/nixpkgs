@@ -8566,7 +8566,12 @@ with pkgs;
     pythonPackages = python3Packages;
   };
 
-  obs-studio = callPackage ../applications/video/obs-studio { };
+  obs-studio = callPackage (
+    if stdenv.hostPlatform.isDarwin then
+      ../applications/video/obs-studio/darwin.nix
+    else
+      ../applications/video/obs-studio
+  ) { };
 
   obs-studio-plugins = recurseIntoAttrs (
     callPackage ../applications/video/obs-studio/plugins.nix { }

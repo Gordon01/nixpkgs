@@ -3,12 +3,16 @@
   obs-studio,
   symlinkJoin,
   makeWrapper,
+  stdenv,
 }:
 
 {
   plugins ? [ ],
 }:
 
+assert lib.assertMsg (
+  !stdenv.hostPlatform.isDarwin || plugins == [ ]
+) "wrapOBS: third-party plugins are not supported on Darwin";
 symlinkJoin {
   name = "wrapped-${obs-studio.name}";
 
@@ -16,31 +20,34 @@ symlinkJoin {
   paths = [ obs-studio ] ++ plugins;
 
   postBuild =
-    let
-      # Some plugins needs extra environment, see obs-gstreamer for an example.
-      pluginArguments = lib.lists.concatMap (plugin: plugin.obsWrapperArguments or [ ]) plugins;
+    if stdenv.hostPlatform.isDarwin then
+      ""
+    else
+      let
+        # Some plugins needs extra environment, see obs-gstreamer for an example.
+        pluginArguments = lib.lists.concatMap (plugin: plugin.obsWrapperArguments or [ ]) plugins;
 
-      pluginsJoined = symlinkJoin {
-        name = "obs-studio-plugins";
-        paths = plugins;
-      };
+        pluginsJoined = symlinkJoin {
+          name = "obs-studio-plugins";
+          paths = plugins;
+        };
 
-      wrapCommandLine = [
-        "wrapProgram"
-        "$out/bin/obs"
-        ''--set OBS_PLUGINS_PATH "${pluginsJoined}/lib/obs-plugins"''
-        ''--set OBS_PLUGINS_DATA_PATH "${pluginsJoined}/share/obs/obs-plugins"''
-      ]
-      ++ lib.lists.unique pluginArguments;
-    in
-    ''
-      ${lib.concatStringsSep " " wrapCommandLine}
+        wrapCommandLine = [
+          "wrapProgram"
+          "$out/bin/obs"
+          ''--set OBS_PLUGINS_PATH "${pluginsJoined}/lib/obs-plugins"''
+          ''--set OBS_PLUGINS_DATA_PATH "${pluginsJoined}/share/obs/obs-plugins"''
+        ]
+        ++ lib.lists.unique pluginArguments;
+      in
+      ''
+        ${lib.concatStringsSep " " wrapCommandLine}
 
-      # Remove unused obs-plugins dir to not cause confusion
-      rm -r $out/share/obs/obs-plugins
-      # Leave some breadcrumbs
-      echo 'Plugins are at ${pluginsJoined}/share/obs/obs-plugins' > $out/share/obs/obs-plugins-README
-    '';
+        # Remove unused obs-plugins dir to not cause confusion
+        rm -r $out/share/obs/obs-plugins
+        # Leave some breadcrumbs
+        echo 'Plugins are at ${pluginsJoined}/share/obs/obs-plugins' > $out/share/obs/obs-plugins-README
+      '';
 
   inherit (obs-studio) meta;
   passthru = obs-studio.passthru // {
