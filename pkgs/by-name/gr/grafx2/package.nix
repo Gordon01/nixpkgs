@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  SDL,
-  SDL_image,
-  SDL_ttf,
+  SDL2,
+  SDL2_image,
+  SDL2_ttf,
   installShellFiles,
   fontconfig,
   libpng,
@@ -12,6 +12,8 @@
   libx11,
   lua5_2_compat,
   pkg-config,
+  desktopToDarwinBundle,
+  which,
   zlib,
 }:
 
@@ -30,21 +32,29 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-KdY7GUhQp/Q7t/ktLPGxI66ZHy2gDAffn2yB5pmcJCM=";
   };
 
+  patches = lib.optionals stdenv.hostPlatform.isDarwin [
+    ./darwin-data-dir.patch
+  ];
+
   postPatch = ''
     substituteInPlace misc/unix/grafx2.desktop \
-      --replace-fail "Exec=grafx2" "Exec=grafx2-sdl"
+      --replace-fail "Exec=grafx2" "Exec=grafx2-sdl2"
   '';
 
   nativeBuildInputs = [
     installShellFiles
     pkg-config
-    SDL # for sdl-config
+    which
+    SDL2 # for sdl-config
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    desktopToDarwinBundle
   ];
 
   buildInputs = [
-    SDL
-    SDL_image
-    SDL_ttf
+    SDL2
+    SDL2_image
+    SDL2_ttf
     fontconfig
     libpng
     libtiff
@@ -56,11 +66,13 @@ stdenv.mkDerivation (finalAttrs: {
   strictDeps = true;
   __structuredAttrs = true;
 
-  makeFlags = [ "--directory=src" ];
-  installFlags = [
+  makeFlags = [
     "--directory=src"
-    "PREFIX=$(out)"
-  ];
+    "API=sdl2"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ "OSX_STATIC=0" ];
+  buildFlags = lib.optionals stdenv.hostPlatform.isDarwin [ "../bin/grafx2-sdl2" ];
+  installFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
     installManPage misc/unix/grafx2.1
@@ -80,7 +92,7 @@ stdenv.mkDerivation (finalAttrs: {
       portable on many other platforms.
     '';
     license = lib.licenses.gpl2Plus;
-    mainProgram = "grafx2-sdl";
+    mainProgram = "grafx2-sdl2";
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

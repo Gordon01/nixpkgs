@@ -1,0 +1,13 @@
+Nixpkgs installs the executable under $out/bin and the data under $out/share/grafx2.
+
+--- a/src/setup.c
++++ b/src/setup.c
+@@ -163,7 +163,7 @@
+   // On all platforms, data is relative to the executable's directory
+   #if defined(__macosx__)
+     // On MacOSX,  it is stored in a special folder:
+-    to_append = "Contents/Resources/";
++    to_append = "../share/grafx2/";
+   #elif defined (__GP2X__) || defined (__gp2x__) || defined (__WIZ__) || defined (__CAANOO__) || defined(GCWZERO) || defined(__AROS__) || defined(__ANDROID__)
+     // On GP2X, AROS and Android, executable is not in bin/
+     to_append = "data/";
